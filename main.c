@@ -18,6 +18,7 @@ int main(int argc, char*argv[])
     char fileName[STR] = "";
     Task *tasks = NULL;
     int size;
+    int i;
 
     if ( argc != 2 ) {
         printf("To run the program,\n");
@@ -26,6 +27,8 @@ int main(int argc, char*argv[])
         strcpy(fileName, argv[1]);
         tasks = read_task(fileName);
         size = read_file_size(fileName);
+        for ( i = 0; i < size; ++i )
+            printf("%s: %d %d %d %d\n", tasks[i].label, tasks[i].arrival, tasks[i].burst, tasks[i].priority, tasks[i].status);
         bubble_sort(tasks, size);
         process(tasks, size);
         

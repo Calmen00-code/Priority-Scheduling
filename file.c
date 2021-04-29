@@ -22,6 +22,8 @@ Task* read_task( char filename[] )
     Task *tasks = NULL;
     int i, size;
     int arrival_time, burst_time, priority;
+    char process_label[STR];
+    char p_label = 'P';
 
     readPtr = fopen(filename, "r");
     if ( readPtr == NULL )
@@ -38,7 +40,8 @@ Task* read_task( char filename[] )
             tasks[i].arrival = arrival_time;
             tasks[i].burst = burst_time;
             tasks[i].priority = priority;
-            strcpy(tasks[i].label, "");
+            sprintf(process_label, "%c%d", p_label, i+1);
+            strcpy(tasks[i].label, process_label);
             /* 0 indicates NOT DONE, DONE is assign as 1 */
             tasks[i].status = NOT_DONE;
             ++i;
