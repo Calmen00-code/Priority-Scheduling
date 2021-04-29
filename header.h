@@ -8,5 +8,7 @@
 #endif
 
 #define STR 100
+#define NOT_DONE 0
+#define DONE 1
 
 #endif
