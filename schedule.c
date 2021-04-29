@@ -5,7 +5,7 @@
  */
 
 #include <stdio.h> /* TODO: Remove this after done debugging */
-#include <string.h>     /* To use memset */
+#include <string.h> 
 #include <stdlib.h>
 #include "schedule.h"
 #include "file.h"       /* To use DONE and NOT_DONE */
@@ -25,8 +25,8 @@ void process( Task *tasks, int task_size )
 {
     int flag_time, total_burst_time, i;
     int *task_idx;
-    Task *wrt_task;
-    Task running_task;
+    WriteTask *wrt_task;
+    Task *running_task;
 
     /* Allocation of wrt_task and task_idx */
     task_idx = calloc(sizeof(task_idx), task_size);
@@ -38,13 +38,11 @@ void process( Task *tasks, int task_size )
     while ( flag_time < total_burst_time ) {
         /* Mark all elements in task_idx as empty (-1) */
         set_arr(task_idx, task_size, EMPTY_IDX);
-        running_task = priority(flag_time, task_idx, tasks, task_size); 
-        printf("Running: %s\n", running_task->label);
-/*
+        running_task = priority(flag_time, tasks, task_size); 
         CPU(running_task, wrt_task[i], &flag_time);
+/*
         display( task_idx, task_size ); FIXME: Testing will be done after CPU is done
 */
-        ++flag_time; /* TODO: debug (Should be removed after testing priority function */
         ++i;
     }
 /*
@@ -52,6 +50,46 @@ void process( Task *tasks, int task_size )
 */
     free(task_idx); task_idx = NULL;
     free(wrt_task); wrt_task = NULL;
+}
+
+/**
+ * Import: running_task -> Decrement on the burst time of current running task
+ *         wrt_task     -> Write the process with its remaining burst time
+ *         *flag_time   -> Update the flag_time in process function 
+ *                      -> Store its final value into wrt_task[i]
+ *
+ * Purpose: Performs burst_time decrement on the running_task
+ */
+void CPU( Task *running_task, WriteTask wrt_task, int *flag_time )
+{
+    int preempt;
+    int stop = FALSE;
+
+    preempt = next_preempt(running_task);
+
+    /**
+     * Stops when higher priority task had preempted OR
+     * when current task done execution
+     */
+    while ( stop == FALSE && running_task.burst_time > 0 ) {
+        running_task->burst_time--;
+        /* Update flag_time in process function (its caller) */
+        *flag_time++;   
+
+        /* Check if there is new process arrived, then check
+           if the new process will preempt current process   */
+        if ( *flag_time == preempt && isPreempt(running_task) == TRUE )
+            stop = TRUE;
+    }
+
+    /* Writing to the wrt_task */
+    strcpy(wrt_task.label, running_task->label);
+    wrt_task.burst_time = *flag_time;
+
+    /* Mark the status to be done if the running_task 
+       had never got preempted */
+    if ( running_task->burst_time == 0 )
+        running_task->status = DONE;
 }
 
 /**
@@ -71,7 +109,7 @@ Task* priority( int flag_time, Task *tasks, int task_size )
     undone_idx = calloc(sizeof(int), task_size);
     set_arr(undone_idx, task_size, EMPTY_IDX);
 
-    /**                                                 
+    /**            
      * Stops when current arrival time for tasks[i] is
      * greater than current latest time (flag_time)  
      *
@@ -94,7 +132,7 @@ Task* priority( int flag_time, Task *tasks, int task_size )
     for ( k = 1; k < task_size; ++k ) {
         if ( undone_idx[k] != EMPTY_IDX ) {
             /* Update the latest index with highest priority */
-            if ( tasks[k].priority > pr ) {
+            if ( tasks[k].priority < pr ) {
                 pr_idx = k;
                 pr = tasks[k].priority;
             }
