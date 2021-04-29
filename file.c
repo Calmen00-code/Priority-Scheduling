@@ -7,8 +7,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "header.h" /* To allow the use of DONE and NOT_DONE for Task */
 #include "file.h"
+#include "header.h" /* To allow the use of DONE and NOT_DONE for Task */
+                    /* and the use of STR */
 
 /**
  * Read the content of the file and assign all the fields in Task struct
@@ -21,11 +22,12 @@ Task* read_task( char filename )
     int i, size;
     int arrival_time, burst_time, priority;
 
-    readPtr = fopen(filename);
+    readPtr = fopen(filename, "r");
     if ( readPtr == NULL )
         perror("Error while reading file");
     else {
-        size = read_file_size( filename );  /* Determining the size of the Task Array */
+        /* Determining the size of the Task Array */
+        size = read_file_size( filename );  
         task = calloc(sizeof(Task), size);
 
         i = 0;
@@ -36,7 +38,31 @@ Task* read_task( char filename )
             task[i].burst = burst_time;
             task[i].priority = priority;
             strcpy(task.label, "");
-            task[i].status = NOT_DONE;     /* 0 indicates NOT DONE, DONE is assign as 1 */
+            /* 0 indicates NOT DONE, DONE is assign as 1 */
+            task[i].status = NOT_DONE;
         }
+        free(readPtr); readPtr = NULL;
     }
+    return task;
 } 
+
+/**
+ * Read the number of lines in a file
+ */
+int read_file_size( char[] filename )
+{
+    FILE *readPtr = NULL;
+    int line = 0;
+    char str[STR];
+
+    readPtr = fopen(filename, "r");
+    if ( readPtr == NULL )
+        perror("Error while reading file");
+    else {
+        /* Reading stops when the pointer reaches the end of file */
+        while ( fgets( str, STR, readPtr ) != NULL )
+            ++line;
+        fclose(readPtr); readPtr = NULL;
+    }
+    return line;
+}

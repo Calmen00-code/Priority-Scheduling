@@ -23,6 +23,8 @@ int main(int argc, char *argv[])
         strcpy(fileName, argv[1]);
         tasks = read_task(fileName);
         bubble_sort(task, size);
+
+        free(tasks); tasks = NULL;
     }   
     return 0;
 }
