@@ -3,6 +3,9 @@
 
 #include "Task.h"
 
-void process( Task *task );
+#define WRITE_TASK_LIMIT 10
+
+void process( Task *task, int task_size );
+int sum_burst( Task *tasks, int task_size );
 
 #endif

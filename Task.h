@@ -1,7 +1,7 @@
 #ifndef TASK
 #define TASK
 
-#include "header.h"
+#include "header.h" /* To allow the usage of STR */
 
 /* Array of Task to be created */
 typedef struct Task {
@@ -11,5 +11,11 @@ typedef struct Task {
     char label[STR];    /* Eg: P1, P2 ... Pn */
     int status;         /* Status of the task in CPU (Eg: Done) */
 } Task;
+
+/* Array of Task use to write the Gantt Chart */
+typedef struct WriteTask {
+    int burst;
+    char label[STR];
+} WriteTask;
 
 #endif

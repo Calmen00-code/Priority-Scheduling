@@ -11,6 +11,7 @@
 #include "file.h"
 #include "Task.h"
 #include "sort.h"
+#include "schedule.h"
 
 int main(int argc, char*argv[])
 {
@@ -26,8 +27,8 @@ int main(int argc, char*argv[])
         tasks = read_task(fileName);
         size = read_file_size(fileName);
         bubble_sort(tasks, size);
+        process(tasks, size);
         
-
         free(tasks); tasks = NULL;
     }
     return 0;

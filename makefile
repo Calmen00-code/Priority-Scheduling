@@ -1,12 +1,12 @@
 CC = gcc
-CFLAGS = -Werror -Wall -pedantic -g
-OBJ = main.o file.o sort.o
+CFLAGS = -Werror -Wall -pedantic -ansi -g
+OBJ = main.o file.o sort.o schedule.o
 EXEC = main
 
 $(EXEC) : $(OBJ)
 	$(CC) $(OBJ) -o $(EXEC)
 
-main.o : main.c header.h file.h Task.h sort.h
+main.o : main.c header.h file.h Task.h sort.h schedule.h
 	$(CC) $(CFLAGS) -c main.c
 
 file.o : file.c file.h header.h Task.h
