@@ -11,6 +11,8 @@ int sum_burst( Task *tasks, int task_size );
 void arrival_task( int flag_time, Task *tasks, int task_size, int *task_idx );
 void set_arr( int *arr, int size, int val );
 Task* priority( int flag_time, Task *tasks, int task_size );
-void CPU( Task *running_task, WriteTask wrt_task, int *flag_time );
+void CPU( Task *tasks, int task_size, Task *running_task, WriteTask wrt_task, int *flag_time );
+int next_preempt( Task *tasks, int task_size, Task *running_task, int *preempt_idx );
+int isPreempt( Task *tasks, int preempt_idx, Task *running_task );
 
 #endif
