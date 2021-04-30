@@ -1,0 +1,48 @@
+P1: 0 5 1 0
+P2: 1 4 2 0
+P3: 3 1 2 0
+P4: 4 2 3 0
+P5: 4 10 1 0
+Undone Task Idx: 0
+Running: P1
+
+Flag Time: 1
+Flag Time: 2
+Flag Time: 3
+Flag Time: 4
+Flag Time: 5
+Undone Task Idx: 1
+Undone Task Idx: 2
+Undone Task Idx: 3
+Undone Task Idx: 4
+Running: P5
+0, 1, 2, 3, 
+Flag Time: 6
+Flag Time: 7
+Flag Time: 8
+Flag Time: 9
+Flag Time: 10
+Flag Time: 11
+Flag Time: 12
+Flag Time: 13
+Flag Time: 14
+Flag Time: 15
+Undone Task Idx: 1
+Undone Task Idx: 2
+Undone Task Idx: 3
+Running: P2
+0, 
+Flag Time: 16
+Flag Time: 17
+Flag Time: 18
+Flag Time: 19
+Undone Task Idx: 2
+Undone Task Idx: 3
+Running: P3
+0, 1, 
+Flag Time: 20
+Undone Task Idx: 3
+Running: P4
+0, 1, 2, 
+Flag Time: 21
+Flag Time: 22

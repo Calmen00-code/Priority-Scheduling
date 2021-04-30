@@ -4,12 +4,13 @@
  * Author : Calmen Chia
  */
 
-#include <stdio.h> /* TODO: Remove this after done debugging */
+#include <stdio.h>  /* FIXME: Remove when done, this is for debugging purposes only */
 #include <string.h> 
 #include <stdlib.h>
 #include "schedule.h"
-#include "file.h"       /* To use DONE and NOT_DONE */
 
+/*
+FIXME: Remove when done, this is for debugging purposes only 
 void display( int *arr, int size )
 {
     int i;
@@ -17,6 +18,7 @@ void display( int *arr, int size )
         printf("%d ", arr[i]);
     printf("\n");
 }
+*/
 
 /**
  * Main function to run the scheduling PP Algorithm
@@ -24,31 +26,21 @@ void display( int *arr, int size )
 void process( Task *tasks, int task_size )
 {
     int flag_time, total_burst_time, i;
-    int *task_idx;
     WriteTask *wrt_task;
     Task *running_task;
 
-    /* Allocation of wrt_task and task_idx */
-    task_idx = calloc(sizeof(task_idx), task_size);
+    /* Allocation of wrt_task */
     wrt_task = calloc(sizeof(wrt_task), task_size * WRITE_TASK_LIMIT);
 
     total_burst_time = sum_burst(tasks, task_size);
 
     i = 0, flag_time = 0;
     while ( flag_time < total_burst_time ) {
-        /* Mark all elements in task_idx as empty (-1) */
-        set_arr(task_idx, task_size, EMPTY_IDX);
         running_task = priority(flag_time, tasks, task_size); 
         CPU(tasks, task_size, running_task, wrt_task[i], &flag_time);
-/*
-        display( task_idx, task_size ); FIXME: Testing will be done after CPU is done
-*/
         ++i;
     }
-/*
     gantt_chart(wrt_task);
-*/
-    free(task_idx); task_idx = NULL;
     free(wrt_task); wrt_task = NULL;
 }
 
@@ -88,11 +80,6 @@ void CPU( Task *tasks, int task_size, Task *running_task,
     /* Writing to the wrt_task */
     strcpy(wrt_task.label, running_task->label);
     wrt_task.burst = *flag_time;
-
-    /* Mark the status to be done if the running_task 
-       had never got preempted */
-    if ( running_task->burst == 0 )
-        running_task->status = DONE;
 }
 
 /**
@@ -128,34 +115,12 @@ int next_preempt( Task *tasks, int task_size,
      * with the address of running_task 
      */
     i = 0;
-    while ( &tasks[i] != running_task ) {
+    while ( i < task_size && strcmp(tasks[i].label, running_task->label) != 0 )
         ++i;
-    }
-    if ( &tasks[i] == running_task ) 
-        printf("Same\n");
-    else
-        printf("%p, %p\n", (void*)&tasks[i], (void*)running_task);
-
-    /* TODO: Test by printing running_task and tasks[i] check if they have the same struct details */
-/*
-    printf("Task[%d]\n", i);
-    printf("Label: %s\n", tasks[i].label);
-    printf("Arrival: %d\n", tasks[i].arrival);
-    printf("Burst: %d\n", tasks[i].burst);
-    printf("Priority: %d\n", tasks[i].priority);
-    printf("Status: %d\n", tasks[i].status);
-    printf("\n");
-    printf("Running Task\n");
-    printf("Label: %s\n", running_task->label);
-    printf("Arrival: %d\n", running_task->arrival);
-    printf("Burst: %d\n", running_task->burst);
-    printf("Priority: %d\n", running_task->priority);
-    printf("Status: %d\n", running_task->status);
-*/
-    
+ 
     /* ASSERTION: task[i].arrival > running_task->arrival */
     /* Stops when next arrival time was found */
-    j = i + 1;
+    j = i;
     while ( tasks[j].arrival == running_task->arrival )
         ++j;
 
@@ -174,7 +139,7 @@ int next_preempt( Task *tasks, int task_size,
  */
 Task* priority( int flag_time, Task *tasks, int task_size )
 {
-    int i, j, k, pr;
+    int i, j, k, pr, idx;
     int pr_idx;         /* Highest priority index for undone task */
     int *undone_idx;    /* Indexes for all undone tasks */
     Task *ret_task;
@@ -190,8 +155,9 @@ Task* priority( int flag_time, Task *tasks, int task_size )
      * Store the index of all undone tasks
      */
     i = 0; j = 0;
-    while ( i < task_size && tasks[i].arrival < flag_time ) {
-        if ( tasks[i].status == NOT_DONE ) {
+    while ( i < task_size && tasks[i].arrival <= flag_time ) {
+        /* Check if this task had finished execution */
+        if ( tasks[i].burst != 0 ) {
             undone_idx[j] = i;
             ++j;
         }
@@ -205,10 +171,12 @@ Task* priority( int flag_time, Task *tasks, int task_size )
     /* Find the highest priority among all undone task entries */
     for ( k = 1; k < task_size; ++k ) {
         if ( undone_idx[k] != EMPTY_IDX ) {
-            /* Update the latest index with highest priority (lower value) */
-            if ( tasks[k].priority < pr ) {
-                pr_idx = k;
-                pr = tasks[k].priority;
+            /* Compare current priority with the latest highest priority */
+            /* Lower Value indicates higher priority */
+            idx = undone_idx[k];
+            if ( tasks[idx].priority < pr ) {
+                pr_idx = idx;               /* Update the latest index */ 
+                pr = tasks[idx].priority;   /* Update the latest priority */
             }
         }
     }

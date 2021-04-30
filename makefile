@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Werror -Wall -pedantic -ansi -g
+CFLAGS = -Werror -pedantic -ansi -g
 OBJ = main.o file.o sort.o schedule.o
 EXEC = main
 
