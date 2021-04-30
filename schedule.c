@@ -9,17 +9,6 @@
 #include <stdlib.h>
 #include "schedule.h"
 
-/*
-FIXME: Remove when done, this is for debugging purposes only 
-void display( int *arr, int size )
-{
-    int i;
-    for ( i = 0; i < size; ++i )
-        printf("%d ", arr[i]);
-    printf("\n");
-}
-*/
-
 /**
  * Main function to run the scheduling PP Algorithm
  */
@@ -112,7 +101,7 @@ double ave_turnaround_time( WriteTask *wrt_task, int wrt_size )
 
     sum = 0.0;
     for ( i = 0; i < wrt_size; ++i )
-        sum += wrt_task[i].turnaround;
+        sum += wrt_task[i].turnaround - wrt_task[i].arrival;
 
     actual_size = 0;
     for ( i = 0; i < wrt_size; ++i ) {
