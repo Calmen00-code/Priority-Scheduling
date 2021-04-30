@@ -42,8 +42,6 @@ Task* read_task( char filename[] )
             tasks[i].priority = priority;
             sprintf(process_label, "%c%d", p_label, i+1);
             strcpy(tasks[i].label, process_label);
-            /* 0 indicates NOT DONE, DONE is assign as 1 */
-            tasks[i].status = NOT_DONE;
             ++i;
         }
         fclose(readPtr); readPtr = NULL;

@@ -16,6 +16,7 @@ typedef struct Task {
 typedef struct WriteTask {
     int burst;
     char label[STR];
+    int status;         /* Initial value is -1 */
 } WriteTask;
 
 #endif

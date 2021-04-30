@@ -4,7 +4,7 @@
  * Author : Calmen Chia
  */
 
-#include <stdio.h>  /* FIXME: Remove when done, this is for debugging purposes only */
+#include <stdio.h>  
 #include <string.h> 
 #include <stdlib.h>
 #include "schedule.h"
@@ -25,23 +25,54 @@ void display( int *arr, int size )
  */
 void process( Task *tasks, int task_size )
 {
-    int flag_time, total_burst_time, i;
+    int flag_time, total_burst_time, i, ii, wrt_size;
     WriteTask *wrt_task;
     Task *running_task;
 
     /* Allocation of wrt_task */
-    wrt_task = calloc(sizeof(wrt_task), task_size * WRITE_TASK_LIMIT);
+    wrt_size = task_size * WRITE_TASK_LIMIT;
+    wrt_task = calloc(sizeof(wrt_task), wrt_size);
+    for ( ii = 0; ii < task_size * WRITE_TASK_LIMIT; ++ii )
+       wrt_task[i].status = UNWRITTEN;
 
     total_burst_time = sum_burst(tasks, task_size);
 
     i = 0, flag_time = 0;
     while ( flag_time < total_burst_time ) {
         running_task = priority(flag_time, tasks, task_size); 
-        CPU(tasks, task_size, running_task, wrt_task[i], &flag_time);
+        CPU(tasks, task_size, running_task, &wrt_task[i], &flag_time);
         ++i;
     }
-    gantt_chart(wrt_task);
+    gantt_chart(wrt_task, wrt_size);
     free(wrt_task); wrt_task = NULL;
+}
+
+/* Operation to print the gantt chart of the process */
+void gantt_chart( WriteTask *wrt_task, int wrt_size )
+{ 
+    int i, j;
+    for ( i = 0; i < wrt_size; ++i ) {
+        /* The size of wrt_task is set bigger than actual in advance
+           Therefore, a status to check if it was WRITTEN is needed */
+        if ( wrt_task[i].status == WRITTEN ) {
+            printf(" %s", wrt_task[i].label);
+            for ( j = 0; j < wrt_task[i].burst; ++j ) 
+                printf(" ");
+        }
+    }
+    printf("\n");
+
+    printf(" 0");
+    for ( i = 0; i < wrt_size; ++i ) {
+        /* The size of wrt_task is set bigger than actual in advance
+           Therefore, a status to check if it was WRITTEN is needed */
+        if ( wrt_task[i].status == WRITTEN ) {
+            for ( j = 0; j < wrt_task[i].burst; ++j ) 
+                printf(" ");
+            printf(" %d", wrt_task[i].burst);
+        }
+    }
+    printf("\n");
 }
 
 /**
@@ -54,7 +85,7 @@ void process( Task *tasks, int task_size )
  * Purpose: Performs burst_time decrement on the running_task
  */
 void CPU( Task *tasks, int task_size, Task *running_task, 
-          WriteTask wrt_task, int *flag_time )
+          WriteTask *wrt_task, int *flag_time )
 {
     int preempt, preempt_idx;
     int stop = FALSE;
@@ -78,8 +109,9 @@ void CPU( Task *tasks, int task_size, Task *running_task,
     }
 
     /* Writing to the wrt_task */
-    strcpy(wrt_task.label, running_task->label);
-    wrt_task.burst = *flag_time;
+    strcpy(wrt_task->label, running_task->label);
+    wrt_task->burst = *flag_time;
+    wrt_task->status = WRITTEN; 
 }
 
 /**
