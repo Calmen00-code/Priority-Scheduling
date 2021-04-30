@@ -56,18 +56,18 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size )
            Therefore, a status to check if it was WRITTEN is needed */
         if ( wrt_task[i].status == WRITTEN ) {
             printf(" %s", wrt_task[i].label);
-            for ( j = 0; j < wrt_task[i].burst; ++j ) 
+            for ( j = wrt_task[i-1].burst; j < wrt_task[i].burst; ++j ) 
                 printf(" ");
         }
     }
     printf("\n");
 
-    printf(" 0");
+    printf("0");
     for ( i = 0; i < wrt_size; ++i ) {
         /* The size of wrt_task is set bigger than actual in advance
            Therefore, a status to check if it was WRITTEN is needed */
         if ( wrt_task[i].status == WRITTEN ) {
-            for ( j = 0; j < wrt_task[i].burst; ++j ) 
+            for ( j = wrt_task[i-1].burst; j < wrt_task[i].burst; ++j ) 
                 printf(" ");
             printf(" %d", wrt_task[i].burst);
         }
