@@ -1,35 +1,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "header.h"
-#include "file.h"
-#include "Task.h"
-#include "sort.h"
+
+typedef struct {
+    int burst;
+    char label[100];
+    int status;         /* Initial value is -1 */
+} WriteTask;
 
 int main()
 {
-    char fileName[STR] = "";
-    Task *tasks = NULL;
-    int size;
-    int i;
-/*
-    if ( argc != 2 ) {
-        printf("To run the program,\n");
-        printf("Type: ./main.c [filename.txt]\n");
-    } else {
-*/
-        scanf("%s", fileName);
-        /* strcpy(fileName, argv[1]); */
-        tasks = read_task(fileName);
-        size = read_file_size(fileName);
-        printf("Size: %d\n", size); 
-        bubble_sort(tasks, size);
-        for ( i = 0; i < size; ++i )
-            printf("Task %d: %d %d %d %d\n", i, tasks[i].arrival, tasks[i].burst, tasks[i].priority, tasks[i].status);
+    int ii;
+    WriteTask *wrt_task;
+    int wrt_size = 5;
 
-        free(tasks); tasks = NULL;
-/*
+    /* Allocation of wrt_task */
+    wrt_task = calloc(sizeof(WriteTask), wrt_size);
+    for ( ii = 0; ii < wrt_size; ++ii ) {
+        wrt_task[ii].burst = 0;
+        strcpy(wrt_task[ii].label, "");
+        wrt_task[ii].status = -1;
     }
-*/
+
+    for ( ii = 0; ii < wrt_size; ++ii ) {
+        printf("Label: %s\n", wrt_task[ii].label);
+        printf("Burst: %d\n", wrt_task[ii].burst);
+        printf("Status: %d\n", wrt_task[ii].status);
+    }
+         
+    free(wrt_task); wrt_task = NULL;
     return 0;
 }

@@ -26,14 +26,17 @@ void display( int *arr, int size )
 void process( Task *tasks, int task_size )
 {
     int flag_time, total_burst_time, i, ii, wrt_size, start_time;
-    WriteTask *wrt_task;
     Task *running_task;
+    WriteTask *wrt_task;
 
     /* Allocation of wrt_task */
     wrt_size = task_size * WRITE_TASK_LIMIT;
-    wrt_task = calloc(sizeof(wrt_task), wrt_size);
-    for ( ii = 0; ii < task_size * WRITE_TASK_LIMIT; ++ii )
-       wrt_task[i].status = UNWRITTEN;
+    wrt_task = malloc(sizeof(WriteTask) * wrt_size);
+    for ( ii = 0; ii < wrt_size; ++ii ) {
+        wrt_task[ii].burst = 0;
+        strcpy(wrt_task[ii].label, "");
+        wrt_task[ii].status = UNWRITTEN;
+    }
 
     total_burst_time = sum_burst(tasks, task_size);
 
@@ -60,7 +63,7 @@ void process( Task *tasks, int task_size )
 /* Operation to print the gantt chart of the process */
 void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
 { 
-    int i, j;
+    int i, j, idx;
 
     /* Printing the top line of the gantt chart */
     for ( i = 0; i < wrt_size; ++i ) {
@@ -69,8 +72,12 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
         if ( wrt_task[i].status == WRITTEN ) {
             /* Printing bottom line based on distance between 
                previous and current burst time */
-            for ( j = wrt_task[i-1].burst; j < wrt_task[i].burst; ++j )
-                printf("--");
+            if ( i > 0 ) 
+                idx = i-1;
+            else 
+                idx = 0;
+            for ( j = wrt_task[idx].burst; j < wrt_task[i].burst; ++j )
+                printf("---");
         }
     }
     printf("\n");
@@ -85,7 +92,11 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
             printf("|%s", wrt_task[i].label);
             /* Printing space based on distance between 
                previous and current burst time */
-            for ( j = wrt_task[i-1].burst; j < wrt_task[i].burst; ++j ) 
+            if ( i > 0 ) 
+                idx = i-1;
+            else 
+                idx = 0;
+            for ( j = wrt_task[idx].burst; j < wrt_task[i].burst; ++j ) 
                 printf(" ");
         }
     }
@@ -99,8 +110,12 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
         if ( wrt_task[i].status == WRITTEN ) {
             /* Printing bottom line based on distance between 
                previous and current burst time */
-            for ( j = wrt_task[i-1].burst; j < wrt_task[i].burst; ++j )
-                printf("--");
+            if ( i > 0 ) 
+                idx = i-1;
+            else 
+                idx = 0;
+            for ( j = wrt_task[idx].burst; j < wrt_task[i].burst; ++j )
+                printf("---");
         }
     }
     printf("\n");
@@ -112,7 +127,13 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
         /* The size of wrt_task is set bigger than actual in advance
            Therefore, a status to check if it was WRITTEN is needed */
         if ( wrt_task[i].status == WRITTEN ) {
-            for ( j = wrt_task[i-1].burst; j < wrt_task[i].burst; ++j ) 
+            /* Printing bottom line based on distance between 
+               previous and current burst time */
+            if ( i > 0 ) 
+                idx = i-1;
+            else 
+                idx = 0;
+            for ( j = wrt_task[idx].burst; j < wrt_task[i].burst; ++j ) 
                 printf(" ");
             printf(" %d ", wrt_task[i].burst);
         }
@@ -147,7 +168,7 @@ void CPU( Task *tasks, int task_size, Task *running_task,
         *flag_time = *flag_time + 1; 
 
         /* Check if the newly arrived process will preempt current process */
-        if ( *flag_time == preempt && 
+        if ( *flag_time == preempt &&
              isPreempt(tasks, preempt_idx, running_task) == TRUE ) {
             stop = TRUE;
         }
@@ -198,12 +219,14 @@ int next_preempt( Task *tasks, int task_size,
     /* ASSERTION: task[i].arrival > running_task->arrival */
     /* Stops when next arrival time was found */
     j = i;
-    while ( tasks[j].arrival == running_task->arrival )
+    while ( j < task_size && tasks[j].arrival == running_task->arrival )
         ++j;
 
     /* Return Next Preempt Index and Next Preempt Time */
-    *preempt_idx = j;
-    time = tasks[j].arrival;
+    if ( j < task_size ) {
+        *preempt_idx = j;
+        time = tasks[j].arrival;
+    }
 
     return time;
 }
