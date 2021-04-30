@@ -24,8 +24,10 @@ Task* read_task( char filename[] )
     char p_label = 'P';
 
     readPtr = fopen(filename, "r");
-    if ( readPtr == NULL )
+    if ( readPtr == NULL ) {
         perror("Error while reading file");
+        exit(1);
+    }
     else {
         /* Determining the size of the Task Array */
         size = read_file_size( filename );  
@@ -57,8 +59,10 @@ int read_file_size( char filename[] )
     char str[STR];
 
     readPtr = fopen(filename, "r");
-    if ( readPtr == NULL )
+    if ( readPtr == NULL ) {
         perror("Error while reading file");
+        exit(1);
+    }
     else {
         /* Reading stops when the pointer reaches the end of file */
         while ( fgets( str, STR, readPtr ) != NULL )
