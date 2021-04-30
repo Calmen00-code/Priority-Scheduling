@@ -26,6 +26,7 @@ void display( int *arr, int size )
 void process( Task *tasks, int task_size )
 {
     int flag_time, total_burst_time, i, ii, wrt_size, start_time;
+    double ave_turnaround/*, ave_wait*/;
     Task *running_task;
     WriteTask *wrt_task;
 
@@ -57,10 +58,35 @@ void process( Task *tasks, int task_size )
         ++i;
     }
     gantt_chart(wrt_task, wrt_size, start_time);
+    printf("\n");
+    ave_turnaround = ave_turnaround_time(wrt_task, wrt_size);
+    /* ave_wait = ave_wait_time(wrt_task, wrt_size); */
+    printf("Average Turnaround Time: %f\n", ave_turnaround);
+    /* printf("Average Waiting Time: %f\n", ave_wait); */
     free(wrt_task); wrt_task = NULL;
 }
 
-/* Operation to print the gantt chart of the process */
+double ave_turnaround_time( WriteTask *wrt_task, int wrt_size )
+{
+    int i, actual_size;
+    double ave, sum;
+
+    sum = 0.0;
+    for ( i = 0; i < wrt_size; ++i )
+        sum += wrt_task[i].burst;
+
+    actual_size = 0;
+    for ( i = 0; i < wrt_size; ++i ) {
+        if ( wrt_task[i].status == WRITTEN )
+            ++actual_size;
+    }
+    ave = sum / (double)actual_size;
+    return ave;
+}
+
+/** 
+ * Operation to print the gantt chart of the process 
+ */
 void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
 { 
     int i, j, idx;
@@ -153,10 +179,12 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
 void CPU( Task *tasks, int task_size, Task *running_task, 
           WriteTask *wrt_task, int *flag_time )
 {
-    int preempt, preempt_idx;
+    int preempt, preempt_idx, *preempt_ptr;
     int stop = FALSE;
 
-    preempt = next_preempt(tasks, task_size, running_task, &preempt_idx);
+    preempt_idx = 0;
+    preempt_ptr = &preempt_idx;
+    preempt = next_preempt(tasks, task_size, running_task, preempt_ptr);
 
     /**
      * Stops when higher priority task had preempted OR
@@ -199,7 +227,9 @@ int isPreempt( Task *tasks, int preempt_idx, Task *running_task )
     return preempt;
 }
 
-/* Returns the next preempt time from current running task */
+/**
+ * Inform the next preempt time and index from current running task 
+ */
 int next_preempt( Task *tasks, int task_size, 
                   Task *running_task, int *preempt_idx )
 {
@@ -227,7 +257,6 @@ int next_preempt( Task *tasks, int task_size,
         *preempt_idx = j;
         time = tasks[j].arrival;
     }
-
     return time;
 }
 
@@ -283,25 +312,6 @@ Task* priority( int flag_time, Task *tasks, int task_size )
     ret_task = &tasks[pr_idx];
     free(undone_idx); undone_idx = NULL;
     return ret_task;
-}
-
-/**
- * Find the task that arrives at current time (flag_time) and 
- * store the index of the task into task_idx
- */
-void arrival_task( int flag_time, Task *tasks, int task_size, int *task_idx )
-{
-    int i, j;
-    j = 0;
-
-    /* Iterate and look for task[i] with burst_time equals to flag_time */
-    /* If found, store the index into the task_idx[j] */
-    for ( i = 0; i < task_size; ++i ) {
-        if ( tasks[i].burst == flag_time ) {
-            task_idx[j] = i;
-            ++j;    /* Store the next task_idx */
-        }
-    }
 }
 
 /* Set all element in arr to val */

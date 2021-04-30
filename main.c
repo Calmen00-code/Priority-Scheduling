@@ -18,7 +18,6 @@ int main(int argc, char*argv[])
     char fileName[STR] = "";
     Task *tasks = NULL;
     int size;
-    int i;
 
     if ( argc != 2 ) {
         printf("To run the program,\n");
