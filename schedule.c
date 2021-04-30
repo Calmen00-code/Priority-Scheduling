@@ -25,7 +25,7 @@ void display( int *arr, int size )
  */
 void process( Task *tasks, int task_size )
 {
-    int flag_time, total_burst_time, i, ii, wrt_size;
+    int flag_time, total_burst_time, i, ii, wrt_size, start_time;
     WriteTask *wrt_task;
     Task *running_task;
 
@@ -37,18 +37,28 @@ void process( Task *tasks, int task_size )
 
     total_burst_time = sum_burst(tasks, task_size);
 
-    i = 0, flag_time = 0;
+    /* Check if the first tasks did not start from 0 (Eg: 1,2,3...n) */
+    /* If first task did not start from 0, increment the flag_time */
+    flag_time = 0;
+    if ( tasks[0].arrival > 0 ) {
+        flag_time = tasks[0].arrival;
+        /* The start time for wrt_task will be arrival time for first task */
+        start_time = flag_time;  
+    } else  /* Otherwise, the task is start at time 0 */
+        start_time = 0;
+
+    i = 0;
     while ( flag_time < total_burst_time ) {
         running_task = priority(flag_time, tasks, task_size); 
         CPU(tasks, task_size, running_task, &wrt_task[i], &flag_time);
         ++i;
     }
-    gantt_chart(wrt_task, wrt_size);
+    gantt_chart(wrt_task, wrt_size, start_time);
     free(wrt_task); wrt_task = NULL;
 }
 
 /* Operation to print the gantt chart of the process */
-void gantt_chart( WriteTask *wrt_task, int wrt_size )
+void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
 { 
     int i, j;
     for ( i = 0; i < wrt_size; ++i ) {
@@ -62,7 +72,7 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size )
     }
     printf("\n");
 
-    printf("0");
+    printf("%d", start_time);
     for ( i = 0; i < wrt_size; ++i ) {
         /* The size of wrt_task is set bigger than actual in advance
            Therefore, a status to check if it was WRITTEN is needed */

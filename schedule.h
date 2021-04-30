@@ -16,6 +16,6 @@ Task* priority( int flag_time, Task *tasks, int task_size );
 void CPU( Task *tasks, int task_size, Task *running_task, WriteTask *wrt_task, int *flag_time );
 int next_preempt( Task *tasks, int task_size, Task *running_task, int *preempt_idx );
 int isPreempt( Task *tasks, int preempt_idx, Task *running_task );
-void gantt_chart( WriteTask *wrt_task, int wrt_size );
+void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time );
 
 #endif

@@ -9,8 +9,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include "file.h"
-#include "header.h" /* To allow the use of DONE and NOT_DONE for Task */
-                    /* and the use of STR */
 
 /**
  * Read the content of the file and assign all the fields in Task struct
