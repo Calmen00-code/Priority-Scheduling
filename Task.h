@@ -14,7 +14,8 @@ typedef struct Task {
 
 /* Array of Task use to write the Gantt Chart */
 typedef struct WriteTask {
-    int burst;
+    int arrival;        /* Use to calculate waiting time */
+    int turnaround;
     char label[STR];
     int status;         /* Initial value is -1 */
 } WriteTask;

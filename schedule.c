@@ -26,7 +26,7 @@ void display( int *arr, int size )
 void process( Task *tasks, int task_size )
 {
     int flag_time, total_burst_time, i, ii, wrt_size, start_time;
-    double ave_turnaround/*, ave_wait*/;
+    double ave_turnaround, ave_wait;
     Task *running_task;
     WriteTask *wrt_task;
 
@@ -34,7 +34,7 @@ void process( Task *tasks, int task_size )
     wrt_size = task_size * WRITE_TASK_LIMIT;
     wrt_task = malloc(sizeof(WriteTask) * wrt_size);
     for ( ii = 0; ii < wrt_size; ++ii ) {
-        wrt_task[ii].burst = 0;
+        wrt_task[ii].turnaround = 0;
         strcpy(wrt_task[ii].label, "");
         wrt_task[ii].status = UNWRITTEN;
     }
@@ -60,12 +60,51 @@ void process( Task *tasks, int task_size )
     gantt_chart(wrt_task, wrt_size, start_time);
     printf("\n");
     ave_turnaround = ave_turnaround_time(wrt_task, wrt_size);
-    /* ave_wait = ave_wait_time(wrt_task, wrt_size); */
-    printf("Average Turnaround Time: %f\n", ave_turnaround);
-    /* printf("Average Waiting Time: %f\n", ave_wait); */
+    ave_wait = ave_wait_time(wrt_task, wrt_size);
+    printf("Average Turnaround Time: %.2f\n", ave_turnaround);
+    printf("Average Waiting Time: %.2f\n", ave_wait);
     free(wrt_task); wrt_task = NULL;
 }
 
+/**
+ * Return the average waiting time of the processes 
+ */
+double ave_wait_time( WriteTask *wrt_task, int wrt_size )
+{
+    int i, actual_size, wait_time;
+    double ave, sum;
+
+    /**                                                     **
+     *         CALCULATE SUM OF WAITING TIME                 *
+     *  The previous process's turnaround time is the        *
+     *  time when current process get execute in CPU         *
+     *                                                       *
+     *  waiting time = previous process turnaround time -    *
+     *                 current arrival time                  *
+     *                                                       *
+     *  i = 1 as First Process always has 0 waiting time     *
+     **                                                     **/
+    sum = 0.0;
+    for ( i = 1; i < wrt_size - 1; ++i ) {
+        /* Waiting Time = Previous Turnaround Time - Current Arrival Time */
+        if ( wrt_task[i].status == WRITTEN ) {
+            wait_time = wrt_task[i-1].turnaround - wrt_task[i].arrival;
+            sum += (double)wait_time;
+        }
+    }
+
+    actual_size = 0;
+    for ( i = 0; i < wrt_size; ++i ) {
+        if ( wrt_task[i].status == WRITTEN )
+            ++actual_size;
+    }
+    ave = sum / (double)actual_size;
+    return ave;
+}
+
+/**
+ * Return the average turn around time of the processes 
+ */
 double ave_turnaround_time( WriteTask *wrt_task, int wrt_size )
 {
     int i, actual_size;
@@ -73,7 +112,7 @@ double ave_turnaround_time( WriteTask *wrt_task, int wrt_size )
 
     sum = 0.0;
     for ( i = 0; i < wrt_size; ++i )
-        sum += wrt_task[i].burst;
+        sum += wrt_task[i].turnaround;
 
     actual_size = 0;
     for ( i = 0; i < wrt_size; ++i ) {
@@ -102,7 +141,7 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
                 idx = i-1;
             else 
                 idx = 0;
-            for ( j = wrt_task[idx].burst; j < wrt_task[i].burst; ++j )
+            for ( j = wrt_task[idx].turnaround; j < wrt_task[i].turnaround; ++j )
                 printf("---");
         }
     }
@@ -122,7 +161,7 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
                 idx = i-1;
             else 
                 idx = 0;
-            for ( j = wrt_task[idx].burst; j < wrt_task[i].burst; ++j ) 
+            for ( j = wrt_task[idx].turnaround; j < wrt_task[i].turnaround; ++j ) 
                 printf(" ");
         }
     }
@@ -140,7 +179,7 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
                 idx = i-1;
             else 
                 idx = 0;
-            for ( j = wrt_task[idx].burst; j < wrt_task[i].burst; ++j )
+            for ( j = wrt_task[idx].turnaround; j < wrt_task[i].turnaround; ++j )
                 printf("---");
         }
     }
@@ -159,9 +198,9 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
                 idx = i-1;
             else 
                 idx = 0;
-            for ( j = wrt_task[idx].burst; j < wrt_task[i].burst; ++j ) 
+            for ( j = wrt_task[idx].turnaround; j < wrt_task[i].turnaround; ++j ) 
                 printf(" ");
-            printf(" %d ", wrt_task[i].burst);
+            printf(" %d ", wrt_task[i].turnaround);
         }
     }
     printf("\n");
@@ -204,7 +243,8 @@ void CPU( Task *tasks, int task_size, Task *running_task,
 
     /* Writing to the wrt_task */
     strcpy(wrt_task->label, running_task->label);
-    wrt_task->burst = *flag_time;
+    wrt_task->arrival = running_task->arrival;
+    wrt_task->turnaround = *flag_time;
     wrt_task->status = WRITTEN; 
 }
 
