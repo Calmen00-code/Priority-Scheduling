@@ -26,7 +26,6 @@ Task* read_task( char filename[] )
     readPtr = fopen(filename, "r");
     if ( readPtr == NULL ) {
         perror("Error while reading file");
-        exit(1);
     }
     else {
         /* Determining the size of the Task Array */
@@ -61,7 +60,6 @@ int read_file_size( char filename[] )
     readPtr = fopen(filename, "r");
     if ( readPtr == NULL ) {
         perror("Error while reading file");
-        exit(1);
     }
     else {
         /* Reading stops when the pointer reaches the end of file */
