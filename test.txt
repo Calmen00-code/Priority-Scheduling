@@ -1,0 +1,7 @@
+syntax on
+set tabstop=4
+set softtabstop=4
+set number
+set expandtab
+autocmd FileType make set noexpandtab shiftwidth=8 softtabstop=0
+set belloff=all

@@ -40,18 +40,21 @@ void process( Task *tasks, int task_size )
     } else  /* Otherwise, the task is start at time 0 */
         start_time = 0;
 
+    /* Selecting process to be allocated in the CPU from time to time */
     i = 0;
     while ( flag_time < total_burst_time ) {
         running_task = priority(flag_time, tasks, task_size); 
         CPU(tasks, task_size, running_task, &wrt_task[i], &flag_time);
         ++i;
     }
+
     gantt_chart(wrt_task, wrt_size, start_time);
     printf("\n");
     ave_turnaround = ave_turnaround_time(wrt_task, wrt_size);
     ave_wait = ave_wait_time(wrt_task, wrt_size);
     printf("Average Turnaround Time: %.2f\n", ave_turnaround);
     printf("Average Waiting Time: %.2f\n", ave_wait);
+
     free(wrt_task); wrt_task = NULL;
 }
 
@@ -76,7 +79,7 @@ double ave_wait_time( WriteTask *wrt_task, int wrt_size )
     sum = 0.0;
     for ( i = 1; i < wrt_size - 1; ++i ) {
         /* Waiting Time = Previous Turnaround Time - Current Arrival Time */
-        if ( wrt_task[i].status == WRITTEN ) {
+        if ( wrt_task[i].status == WRITTEN ) {  /* Only process written entry */
             wait_time = wrt_task[i-1].turnaround - wrt_task[i].arrival;
             sum += (double)wait_time;
         }
@@ -84,7 +87,8 @@ double ave_wait_time( WriteTask *wrt_task, int wrt_size )
 
     actual_size = 0;
     for ( i = 0; i < wrt_size; ++i ) {
-        if ( wrt_task[i].status == WRITTEN )
+        if ( wrt_task[i].status == WRITTEN )    /* Only process written entry */
+
             ++actual_size;
     }
     ave = sum / (double)actual_size;
@@ -100,6 +104,7 @@ double ave_turnaround_time( WriteTask *wrt_task, int wrt_size )
     double ave, sum;
 
     sum = 0.0;
+    /* Turnaround Time = Finished Time - Arrival Time */
     for ( i = 0; i < wrt_size; ++i )
         sum += wrt_task[i].turnaround - wrt_task[i].arrival;
 
