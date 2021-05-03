@@ -66,6 +66,7 @@ void process( Task *tasks, int task_size )
             wrt_task[i].arrival = curr_arrival;
             wrt_task[i].turnaround = flag_time;
             wrt_task[i].status = WRITTEN; 
+            total_burst_time += total_idle_time;
         }
         ++i;
     }
@@ -167,12 +168,6 @@ void CPU( Task *tasks, int task_size, Task *running_task,
     int preempt, preempt_idx, *preempt_ptr;
     int stop = FALSE;
 
-/*  FIXME: Debug
-    preempt_idx = 0;
-    preempt_ptr = &preempt_idx;
-    preempt = next_preempt(tasks, task_size, running_task, preempt_ptr);
-*/
-
     /**
      * Stops when higher priority task had preempted OR
      * when current task done execution
@@ -185,10 +180,6 @@ void CPU( Task *tasks, int task_size, Task *running_task,
         /* Check if the newly arrived process will preempt current process */
         if ( isPreempt(tasks, task_size, 
                        *flag_time, running_task ) == TRUE ) {
-            /*  FIXME: Debug - Old IF CONDITION 
-                flag_time == preempt &&
-                isPreempt(tasks, preempt_idx, running_task) == TRUE ) { 
-            */
             stop = TRUE;
         }
     }
@@ -222,7 +213,6 @@ int isPreempt( Task *tasks, int task_size, int curr_time, Task *running_task )
             ++j;
         }
     }
-
     
     ii = 0;
     while ( ii < task_size && preempt == FALSE ) {
@@ -236,21 +226,6 @@ int isPreempt( Task *tasks, int task_size, int curr_time, Task *running_task )
         }
         ++ii;
     }
-
-/*
-    int next_priority, curr_priority;
-    int preempt = FALSE;
-
-    next_priority = tasks[preempt_idx].priority;
-    curr_priority = running_task->priority;
-*/
-
-    /* Lower values indicate higher priority. */
-    /* Higher priority means Preemption is granted */
-/*
-    if ( next_priority < curr_priority )
-        preempt = TRUE;
-*/
     return preempt;
 }
 
@@ -358,35 +333,15 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
         /* The size of wrt_task is set bigger than actual in advance
            Therefore, a status to check if it was WRITTEN is needed */
         if ( wrt_task[i].status == WRITTEN ) {
-            /* If current process has same label than its previous process,
-               Print them into one bigger chunk instead of separated boxes */
-            if ( i == 0 )
-                printf(" %d ", wrt_task[i].turnaround);
-            else if ( strcmp(wrt_task[i].label, wrt_task[i-1].label) != 0 )
-                printf(" %d ", wrt_task[i].turnaround);
-            else if ( strcmp(wrt_task[i].label, wrt_task[i-1].label) == 0 ) {
-                ii = i+1;
-
-                /* Find the final time for the process with same label to end */
-                strcpy(check_label, wrt_task[i].label);
-                while ( ii < wrt_size && 
-                        strcmp(wrt_task[ii].label, check_label) == 0 ) {
-                    ++ii;
-                }
-                printf(" %d ", wrt_task[ii-1].turnaround);
-            }
-/*
-            else
-                printf(" %d ", wrt_task[i].turnaround);
-*/
             /* Printing bottom line based on distance between 
                previous and current burst time */
             if ( i > 0 ) 
                 idx = i-1;
             else 
                 idx = 0;
-            for ( j = wrt_task[idx].turnaround; j < wrt_task[i].turnaround; ++j ) 
+            for ( j = wrt_task[idx].turnaround; j < wrt_task[i].turnaround; ++j )
                 printf(" ");
+            printf(" %d ", wrt_task[i].turnaround);
         }
     }
     printf("\n");
@@ -465,7 +420,7 @@ void set_arr( int *arr, int size, int val )
         arr[i] = val;
 }
 
-/* @return sum of the burst time of tasks */
+/* Return sum of the burst time of tasks */
 int sum_burst( Task *tasks, int task_size )
 {
     int i;
