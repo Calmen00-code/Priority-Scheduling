@@ -167,9 +167,11 @@ void CPU( Task *tasks, int task_size, Task *running_task,
     int preempt, preempt_idx, *preempt_ptr;
     int stop = FALSE;
 
+/*  FIXME: Debug
     preempt_idx = 0;
     preempt_ptr = &preempt_idx;
     preempt = next_preempt(tasks, task_size, running_task, preempt_ptr);
+*/
 
     /**
      * Stops when higher priority task had preempted OR
@@ -181,8 +183,12 @@ void CPU( Task *tasks, int task_size, Task *running_task,
         *flag_time = *flag_time + 1; 
 
         /* Check if the newly arrived process will preempt current process */
-        if ( *flag_time == preempt &&
-             isPreempt(tasks, preempt_idx, running_task) == TRUE ) {
+        if ( isPreempt(tasks, task_size, 
+                       *flag_time, running_task ) == TRUE ) {
+            /*  FIXME: Debug - Old IF CONDITION 
+                flag_time == preempt &&
+                isPreempt(tasks, preempt_idx, running_task) == TRUE ) { 
+            */
             stop = TRUE;
         }
     }
@@ -198,18 +204,53 @@ void CPU( Task *tasks, int task_size, Task *running_task,
  * Compare the priority of the newly arrived process and 
  * return TRUE if newly arrived process had higher priority
  */
-int isPreempt( Task *tasks, int preempt_idx, Task *running_task )
+int isPreempt( Task *tasks, int task_size, int curr_time, Task *running_task )
 {
+    int i, j, ii;
+    int *undone_idx, idx;
+    int preempt = FALSE;
+
+    undone_idx = calloc(sizeof(int), task_size); 
+    set_arr(undone_idx, task_size, EMPTY_IDX);
+
+    j = 0;
+    for ( i = 0; i < task_size; ++i ) {
+        /* Store all index for arrived AND undone task */
+        if ( tasks[i].arrival <= curr_time && 
+             tasks[i].burst != 0 ) {
+            undone_idx[j] = i;
+            ++j;
+        }
+    }
+
+    
+    ii = 0;
+    while ( ii < task_size && preempt == FALSE ) {
+        idx = undone_idx[ii];  /* Get the idx for undone task */
+
+        /* Compute only all available index */
+        if ( undone_idx[idx] != EMPTY_IDX ) {
+            /* Check if preemption is possible */
+            if ( tasks[idx].priority < running_task->priority )
+                preempt = TRUE;
+        }
+        ++ii;
+    }
+
+/*
     int next_priority, curr_priority;
     int preempt = FALSE;
 
     next_priority = tasks[preempt_idx].priority;
     curr_priority = running_task->priority;
+*/
 
     /* Lower values indicate higher priority. */
     /* Higher priority means Preemption is granted */
+/*
     if ( next_priority < curr_priority )
         preempt = TRUE;
+*/
     return preempt;
 }
 
