@@ -16,7 +16,7 @@
 void process( Task *tasks, int task_size )
 {
     int flag_time, total_burst_time, i, ii, wrt_size, start_time;
-    int curr_arrival;
+    int curr_arrival, total_idle_time, idle_time;
     double ave_turnaround, ave_wait;
     char space[STR];
     Task *running_task;
@@ -44,18 +44,23 @@ void process( Task *tasks, int task_size )
         start_time = 0;
 
     /* Selecting process to be allocated in the CPU from time to time */
-    i = 0;
+    i = 0; total_idle_time = 0;
     while ( flag_time < total_burst_time ) {
         if ( hasProcess( tasks, task_size, flag_time ) == TRUE ) {
             running_task = priority(flag_time, tasks, task_size); 
             CPU(tasks, task_size, running_task, &wrt_task[i], &flag_time);
         } else {
+            idle_time = 0;
             curr_arrival = flag_time;
+            /* Append spaces everytime when there was no process found */
             while ( hasProcess( tasks, task_size, flag_time ) == FALSE ) {
                 strcat(space, " ");
                 ++flag_time;
             }
  
+            idle_time = flag_time - curr_arrival;
+            total_idle_time += idle_time;
+
             /* Writing to the wrt_task */
             strcpy(wrt_task[i].label, space);
             wrt_task[i].arrival = curr_arrival;
@@ -67,8 +72,8 @@ void process( Task *tasks, int task_size )
 
     gantt_chart(wrt_task, wrt_size, start_time);
     printf("\n");
-    ave_turnaround = ave_turnaround_time(wrt_task, wrt_size);
-    ave_wait = ave_wait_time(wrt_task, wrt_size);
+    ave_turnaround = ave_turnaround_time(wrt_task, wrt_size, total_idle_time);
+    ave_wait = ave_wait_time(wrt_task, wrt_size, total_idle_time);
     printf("Average Turnaround Time: %.2f\n", ave_turnaround);
     printf("Average Waiting Time: %.2f\n", ave_wait);
 
@@ -76,7 +81,7 @@ void process( Task *tasks, int task_size )
 }
 
 /**
- * Return TRUE if there are processes arrived at flag_time
+ * Return TRUE if there are processes arrived from 0 to flag_time
  */
 int hasProcess( Task *tasks, int task_size, int flag_time )
 {
@@ -85,7 +90,8 @@ int hasProcess( Task *tasks, int task_size, int flag_time )
     /* Iterate until a process arrived at flag_time is found */
     i = 0; exist = FALSE;
     while ( i < task_size && exist == FALSE ) {
-        if ( tasks[i].arrival == flag_time )
+        /* All process before flag_time will be accepted */
+        if ( tasks[i].arrival <= flag_time )
             exist = TRUE;
         ++i;
     }
@@ -240,65 +246,6 @@ int next_preempt( Task *tasks, int task_size,
     return time;
 }
 
-/**
- * Return the average waiting time of the processes 
- */
-double ave_wait_time( WriteTask *wrt_task, int wrt_size )
-{
-    int i, actual_size, wait_time;
-    double ave, sum;
-
-    /**                                                     **
-     *         CALCULATE SUM OF WAITING TIME                 *
-     *  The previous process's turnaround time is the        *
-     *  time when current process get execute in CPU         *
-     *                                                       *
-     *  waiting time = previous process turnaround time -    *
-     *                 current arrival time                  *
-     *                                                       *
-     *  i = 1 as First Process always has 0 waiting time     *
-     **                                                     **/
-    sum = 0.0;
-    for ( i = 1; i < wrt_size - 1; ++i ) {
-        /* Waiting Time = Previous Turnaround Time - Current Arrival Time */
-        if ( wrt_task[i].status == WRITTEN ) {  /* Only process written entry */
-            wait_time = wrt_task[i-1].turnaround - wrt_task[i].arrival;
-            sum += (double)wait_time;
-        }
-    }
-
-    actual_size = 0;
-    for ( i = 0; i < wrt_size; ++i ) {
-        if ( wrt_task[i].status == WRITTEN )    /* Only process written entry */
-
-            ++actual_size;
-    }
-    ave = sum / (double)actual_size;
-    return ave;
-}
-
-/**
- * Return the average turn around time of the processes 
- */
-double ave_turnaround_time( WriteTask *wrt_task, int wrt_size )
-{
-    int i, actual_size;
-    double ave, sum;
-
-    sum = 0.0;
-    /* Turnaround Time = Finished Time - Arrival Time */
-    for ( i = 0; i < wrt_size; ++i )
-        sum += wrt_task[i].turnaround - wrt_task[i].arrival;
-
-    actual_size = 0;
-    for ( i = 0; i < wrt_size; ++i ) {
-        if ( wrt_task[i].status == WRITTEN )
-            ++actual_size;
-    }
-    ave = sum / (double)actual_size;
-    return ave;
-}
-
 /** 
  * Operation to print the gantt chart of the process 
  */
@@ -380,6 +327,71 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
         }
     }
     printf("\n");
+}
+
+/**
+ * Return the average waiting time of the processes 
+ */
+double ave_wait_time( WriteTask *wrt_task, int wrt_size,
+                      int total_idle_time )
+{
+    int i, actual_size, wait_time;
+    double ave, sum;
+
+    /**                                                     **
+     *         CALCULATE SUM OF WAITING TIME                 *
+     *  The previous process's turnaround time is the        *
+     *  time when current process get execute in CPU         *
+     *                                                       *
+     *  waiting time = previous process turnaround time -    *
+     *                 current arrival time                  *
+     *                                                       *
+     *  i = 1 as First Process always has 0 waiting time     *
+     **                                                     **/
+    sum = 0.0;
+    for ( i = 1; i < wrt_size - 1; ++i ) {
+        /* Waiting Time = Previous Turnaround Time - Current Arrival Time */
+        if ( wrt_task[i].status == WRITTEN ) {  /* Only process written entry */
+            wait_time = wrt_task[i-1].turnaround - wrt_task[i].arrival;
+            sum += (double)wait_time;
+        }
+    }
+
+    sum -= total_idle_time;
+
+    actual_size = 0;
+    for ( i = 0; i < wrt_size; ++i ) {
+        if ( wrt_task[i].status == WRITTEN )    /* Only process written entry */
+
+            ++actual_size;
+    }
+    ave = sum / (double)actual_size;
+    return ave;
+}
+
+/**
+ * Return the average turn around time of the processes 
+ */
+double ave_turnaround_time( WriteTask *wrt_task, int wrt_size, 
+                            int total_idle_time )
+{
+    int i, actual_size;
+    double ave, sum;
+
+    sum = 0.0;
+    /* Turnaround Time = Finished Time - Arrival Time */
+    for ( i = 0; i < wrt_size; ++i )
+        sum += wrt_task[i].turnaround - wrt_task[i].arrival;
+
+    sum -= total_idle_time;
+
+    actual_size = 0;
+    for ( i = 0; i < wrt_size; ++i ) {
+        if ( wrt_task[i].status == WRITTEN )
+            ++actual_size;
+    }
+    ave = sum / (double)actual_size;
+    return ave;
 }
 
 /* Set all element in arr to val */
