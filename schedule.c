@@ -295,7 +295,8 @@ int next_preempt( Task *tasks, int task_size,
  */
 void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
 { 
-    int i, j, idx;
+    int i, j, ii, idx;
+    char check_label[STR];
 
     /* Printing the top line of the gantt chart */
     for ( i = 0; i < wrt_size; ++i ) {
@@ -371,7 +372,21 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
                 printf(" %d ", wrt_task[i].turnaround);
             else if ( strcmp(wrt_task[i].label, wrt_task[i-1].label) != 0 )
                 printf(" %d ", wrt_task[i].turnaround);
+            else if ( strcmp(wrt_task[i].label, wrt_task[i-1].label) == 0 ) {
+                ii = i+1;
 
+                /* Find the final time for the process with same label to end */
+                strcpy(check_label, wrt_task[i].label);
+                while ( ii < wrt_size && 
+                        strcmp(wrt_task[ii].label, check_label) == 0 ) {
+                    ++ii;
+                }
+                printf(" %d ", wrt_task[ii-1].turnaround);
+            }
+/*
+            else
+                printf(" %d ", wrt_task[i].turnaround);
+*/
             /* Printing bottom line based on distance between 
                previous and current burst time */
             if ( i > 0 ) 
