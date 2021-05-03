@@ -46,12 +46,12 @@ void process( Task *tasks, int task_size )
     /* Selecting process to be allocated in the CPU from time to time */
     i = 0;
     while ( flag_time < total_burst_time ) {
-        if ( hasProcess( tasks, flag_time ) == TRUE ) {
+        if ( hasProcess( tasks, task_size, flag_time ) == TRUE ) {
             running_task = priority(flag_time, tasks, task_size); 
             CPU(tasks, task_size, running_task, &wrt_task[i], &flag_time);
         } else {
             curr_arrival = flag_time;
-            while ( hasProcess( tasks, flag_time ) == FALSE ) {
+            while ( hasProcess( tasks, task_size, flag_time ) == FALSE ) {
                 strcat(space, " ");
                 ++flag_time;
             }
@@ -73,6 +73,23 @@ void process( Task *tasks, int task_size )
     printf("Average Waiting Time: %.2f\n", ave_wait);
 
     free(wrt_task); wrt_task = NULL;
+}
+
+/**
+ * Return TRUE if there are processes arrived at flag_time
+ */
+int hasProcess( Task *tasks, int task_size, int flag_time )
+{
+    int i, exist;
+
+    /* Iterate until a process arrived at flag_time is found */
+    i = 0; exist = FALSE;
+    while ( i < task_size && exist == FALSE ) {
+        if ( tasks[i].arrival == flag_time )
+            exist = TRUE;
+        ++i;
+    }
+    return exist;
 }
 
 /**
