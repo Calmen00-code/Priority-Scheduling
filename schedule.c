@@ -126,6 +126,7 @@ Task* priority( int flag_time, Task *tasks, int task_size )
         /* Check if this task had finished execution */
         if ( tasks[i].burst != 0 ) {
             undone_idx[j] = i;
+            printf("j: %d, undone_idx[j]: %d\n", j, undone_idx[j]);
             ++j;
         }
         ++i;
@@ -133,6 +134,8 @@ Task* priority( int flag_time, Task *tasks, int task_size )
 
     /* Get the first undone priority */
     pr_idx = undone_idx[0];
+    printf("undone_idx[0]: %d\n", undone_idx[0]);
+    /* printf("%d\n", pr_idx); */
     pr = tasks[pr_idx].priority;
 
     /* Find the highest priority among all undone task entries */
@@ -229,7 +232,7 @@ int isPreempt( Task *tasks, int task_size, int curr_time, Task *running_task )
         idx = undone_idx[ii];  /* Get the idx for undone task */
 
         /* Compute only all available index */
-        if ( undone_idx[idx] != EMPTY_IDX ) {
+        if ( undone_idx[ii] != EMPTY_IDX ) {
             /* Check if preemption is possible */
             if ( tasks[idx].priority < running_task->priority )
                 preempt = TRUE;
@@ -318,7 +321,13 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
         /* The size of wrt_task is set bigger than actual in advance
            Therefore, a status to check if it was WRITTEN is needed */
         if ( wrt_task[i].status == WRITTEN ) {
-            printf("|%s", wrt_task[i].label);
+            /* If current process has same label than its previous process,
+               Print them into one bigger chunk instead of separated boxes */
+            if ( i == 0 )
+                printf("|%s", wrt_task[i].label);
+            else if ( strcmp(wrt_task[i].label, wrt_task[i-1].label) != 0 )
+                printf("|%s", wrt_task[i].label);
+
             /* Printing space based on distance between 
                previous and current burst time */
             if ( i > 0 ) 
@@ -356,6 +365,13 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
         /* The size of wrt_task is set bigger than actual in advance
            Therefore, a status to check if it was WRITTEN is needed */
         if ( wrt_task[i].status == WRITTEN ) {
+            /* If current process has same label than its previous process,
+               Print them into one bigger chunk instead of separated boxes */
+            if ( i == 0 )
+                printf(" %d ", wrt_task[i].turnaround);
+            else if ( strcmp(wrt_task[i].label, wrt_task[i-1].label) != 0 )
+                printf(" %d ", wrt_task[i].turnaround);
+
             /* Printing bottom line based on distance between 
                previous and current burst time */
             if ( i > 0 ) 
@@ -364,7 +380,6 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
                 idx = 0;
             for ( j = wrt_task[idx].turnaround; j < wrt_task[i].turnaround; ++j ) 
                 printf(" ");
-            printf(" %d ", wrt_task[i].turnaround);
         }
     }
     printf("\n");
