@@ -21,7 +21,7 @@ int main()
     int stop = FALSE;
 
     while ( stop == FALSE ) {
-        printf("INPUT: ");
+        printf("PP Simulation: ");
         scanf("%s", fileName);
 
         if ( strcmp( fileName, "QUIT" ) == 0 )
