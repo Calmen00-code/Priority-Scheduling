@@ -7,6 +7,7 @@
 #include <stdio.h>  
 #include <string.h> 
 #include <stdlib.h>
+#include "header.h"
 #include "schedule.h"
 
 /**
@@ -15,7 +16,9 @@
 void process( Task *tasks, int task_size )
 {
     int flag_time, total_burst_time, i, ii, wrt_size, start_time;
+    int curr_arrival;
     double ave_turnaround, ave_wait;
+    char space[STR];
     Task *running_task;
     WriteTask *wrt_task;
 
@@ -43,8 +46,22 @@ void process( Task *tasks, int task_size )
     /* Selecting process to be allocated in the CPU from time to time */
     i = 0;
     while ( flag_time < total_burst_time ) {
-        running_task = priority(flag_time, tasks, task_size); 
-        CPU(tasks, task_size, running_task, &wrt_task[i], &flag_time);
+        if ( hasProcess( tasks, flag_time ) == TRUE ) {
+            running_task = priority(flag_time, tasks, task_size); 
+            CPU(tasks, task_size, running_task, &wrt_task[i], &flag_time);
+        } else {
+            curr_arrival = flag_time;
+            while ( hasProcess( tasks, flag_time ) == FALSE ) {
+                strcat(space, " ");
+                ++flag_time;
+            }
+ 
+            /* Writing to the wrt_task */
+            strcpy(wrt_task[i].label, space);
+            wrt_task[i].arrival = curr_arrival;
+            wrt_task[i].turnaround = flag_time;
+            wrt_task[i].status = WRITTEN; 
+        }
         ++i;
     }
 
