@@ -91,7 +91,7 @@ int hasProcess( Task *tasks, int task_size, int flag_time )
     i = 0; exist = FALSE;
     while ( i < task_size && exist == FALSE ) {
         /* All process before flag_time will be accepted */
-        if ( tasks[i].arrival <= flag_time )
+        if ( tasks[i].arrival <= flag_time && tasks[i].burst != 0 )
             exist = TRUE;
         ++i;
     }
@@ -126,7 +126,6 @@ Task* priority( int flag_time, Task *tasks, int task_size )
         /* Check if this task had finished execution */
         if ( tasks[i].burst != 0 ) {
             undone_idx[j] = i;
-            printf("j: %d, undone_idx[j]: %d\n", j, undone_idx[j]);
             ++j;
         }
         ++i;
@@ -134,8 +133,6 @@ Task* priority( int flag_time, Task *tasks, int task_size )
 
     /* Get the first undone priority */
     pr_idx = undone_idx[0];
-    printf("undone_idx[0]: %d\n", undone_idx[0]);
-    /* printf("%d\n", pr_idx); */
     pr = tasks[pr_idx].priority;
 
     /* Find the highest priority among all undone task entries */
@@ -322,12 +319,7 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
         /* The size of wrt_task is set bigger than actual in advance
            Therefore, a status to check if it was WRITTEN is needed */
         if ( wrt_task[i].status == WRITTEN ) {
-            /* If current process has same label than its previous process,
-               Print them into one bigger chunk instead of separated boxes */
-            if ( i == 0 )
-                printf("|%s", wrt_task[i].label);
-            else if ( strcmp(wrt_task[i].label, wrt_task[i-1].label) != 0 )
-                printf("|%s", wrt_task[i].label);
+            printf("|%s", wrt_task[i].label);
 
             /* Printing space based on distance between 
                previous and current burst time */
