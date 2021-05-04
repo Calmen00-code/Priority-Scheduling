@@ -73,7 +73,7 @@ void process( Task *tasks, int task_size )
 
     gantt_chart(wrt_task, wrt_size, start_time);
     printf("\n");
-    ave_turnaround = ave_turnaround_time(wrt_task, wrt_size, total_idle_time);
+    ave_turnaround = ave_turnaround_time(wrt_task, wrt_size);
     ave_wait = ave_wait_time(wrt_task, wrt_size, total_idle_time);
     printf("Average Turnaround Time: %.2f\n", ave_turnaround);
     printf("Average Waiting Time: %.2f\n", ave_wait);
@@ -367,19 +367,25 @@ double ave_wait_time( WriteTask *wrt_task, int wrt_size,
     sum = 0.0;
     for ( i = 1; i < wrt_size - 1; ++i ) {
         /* Waiting Time = Previous Turnaround Time - Current Arrival Time */
-        if ( wrt_task[i].status == WRITTEN ) {  /* Only process written entry */
+        /* Check if idle time of CPU */
+        /* If current label does not contains 'P', 
+           it there are no process at this time */
+        if ( wrt_task[i].status == WRITTEN && 
+             strchr(wrt_task[i].label, 'P') != NULL ) {
             wait_time = wrt_task[i-1].turnaround - wrt_task[i].arrival;
             sum += (double)wait_time;
         }
     }
 
-    sum -= total_idle_time;
-
     actual_size = 0;
     for ( i = 0; i < wrt_size; ++i ) {
-        if ( wrt_task[i].status == WRITTEN )    /* Only process written entry */
-
+        /* Check if idle time of CPU */
+        /* If current label does not contains 'P', 
+           it there are no process at this time */
+        if ( wrt_task[i].status == WRITTEN && 
+             strchr(wrt_task[i].label, 'P') != NULL ) {
             ++actual_size;
+        }
     }
     ave = sum / (double)actual_size;
     return ave;
@@ -388,8 +394,7 @@ double ave_wait_time( WriteTask *wrt_task, int wrt_size,
 /**
  * Return the average turn around time of the processes 
  */
-double ave_turnaround_time( WriteTask *wrt_task, int wrt_size, 
-                            int total_idle_time )
+double ave_turnaround_time( WriteTask *wrt_task, int wrt_size )
 {
     int i, actual_size;
     double ave, sum;
