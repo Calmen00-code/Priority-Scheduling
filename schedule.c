@@ -165,7 +165,6 @@ Task* priority( int flag_time, Task *tasks, int task_size )
 void CPU( Task *tasks, int task_size, Task *running_task, 
           WriteTask *wrt_task, int *flag_time )
 {
-    int preempt, preempt_idx, *preempt_ptr;
     int stop = FALSE;
 
     /**
@@ -267,8 +266,7 @@ int next_preempt( Task *tasks, int task_size,
  */
 void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
 { 
-    int i, j, ii, idx;
-    char check_label[STR];
+    int i, j, idx;
 
     /* Printing the top line of the gantt chart */
     for ( i = 0; i < wrt_size; ++i ) {
@@ -398,15 +396,25 @@ double ave_turnaround_time( WriteTask *wrt_task, int wrt_size,
 
     sum = 0.0;
     /* Turnaround Time = Finished Time - Arrival Time */
-    for ( i = 0; i < wrt_size; ++i )
-        sum += wrt_task[i].turnaround - wrt_task[i].arrival;
-
-    sum -= total_idle_time;
+    for ( i = 0; i < wrt_size; ++i ) {
+        /* Check if idle time of CPU */
+        /* If current label does not contains 'P', 
+           it there are no process at this time */
+        if ( wrt_task[i].status == WRITTEN && 
+             strchr(wrt_task[i].label, 'P') != NULL ) {
+            sum += wrt_task[i].turnaround - wrt_task[i].arrival;
+        }
+    }
 
     actual_size = 0;
     for ( i = 0; i < wrt_size; ++i ) {
-        if ( wrt_task[i].status == WRITTEN )
+        /* Check if idle time of CPU */
+        /* If current label does not contains 'P', 
+           it there are no process at this time */
+        if ( wrt_task[i].status == WRITTEN && 
+             strchr(wrt_task[i].label, 'P') != NULL ) {
             ++actual_size;
+        }
     }
     ave = sum / (double)actual_size;
     return ave;
