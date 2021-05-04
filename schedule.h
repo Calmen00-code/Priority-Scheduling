@@ -18,6 +18,6 @@ int next_preempt( Task *tasks, int task_size, Task *running_task, int *preempt_i
 int isPreempt( Task *tasks, int task_size, int curr_time, Task *running_task );
 void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time );
 double ave_turnaround_time( WriteTask *wrt_task, int wrt_size );
-double ave_wait_time( WriteTask *wrt_task, int wrt_size, int total_idle_time );
+double ave_wait_time( WriteTask *wrt_task, int wrt_size );
 
 #endif
