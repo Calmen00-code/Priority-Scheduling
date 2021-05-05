@@ -225,6 +225,7 @@ int isPreempt( Task *tasks, int task_size, int curr_time, Task *running_task )
         }
         ++ii;
     }
+    free(undone_idx); undone_idx = NULL;
     return preempt;
 }
 
